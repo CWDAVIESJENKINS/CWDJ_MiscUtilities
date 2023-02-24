@@ -27,7 +27,7 @@ function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
 
 if ~exist('Exts','var')
     Exts = {'.nii*'}; % Search for .nii & .nii.gz
-elseif isstring(Exts)
+elseif ~iscell(Exts)
     Exts = {Exts}; % If single ext, place in cell
 end
 
@@ -74,21 +74,26 @@ for JJ = 1:L %Loop over all files
     if isempty(FolderLevels{1}) % 1st entry may be empty depending on trailing filesep
         FolderLevels = FolderLevels(2:end);
     end
+    L = length(FolderLevels);
+
     % Sub, ses, and modality entries assume: 
     %   sub-* at the level below TopDIR
     %   optional ses-* below sub
     %   Then modality (e.g. mrs or anat etc.) below this
     %   Outputs a warning if additional folder layers detected beyond this
     Sub = erase(FolderLevels{1},'sub-'); % Assume Subject at top level
-    if contains(FolderLevels{2},'ses-') % If there is a session level, add it
+    if L>1 && contains(FolderLevels{2},'ses-') % If there is a session level, add it
         Ses = erase(FolderLevels{2},'ses-');
         N=3;
     else % If no session level, leave empty
         Ses = [];
         N=2;
     end
-    Files(JJ).modality = FolderLevels{N}; % 'modality' occurs at next directory level
-    
+
+    if L>=N %Check modality level included at all
+        Files(JJ).modality = FolderLevels{N}; % 'modality' occurs at next directory level
+    end
+
     if length(FolderLevels)>N+1
         % There may be one level below 'modality' depending on format
         warning('Deep folder levels detected:\n%s\n',fullfile(Folderlist{JJ},Filelist{JJ}))
@@ -96,7 +101,7 @@ for JJ = 1:L %Loop over all files
     end
 
     %Check for BIDS filename inconsistencies and throw warnings:
-    if ~strcmp(Sub,Files(JJ).sub)
+    if ~isfield(Files(JJ),'sub') || ~strcmp(Sub,Files(JJ).sub)
         warning('Potential file/folder name inconsistency detected! Subject mismatch:\n%s\n',fullfile(Folderlist{JJ},Filelist{JJ}))
         ProbFlag=1;
     end
