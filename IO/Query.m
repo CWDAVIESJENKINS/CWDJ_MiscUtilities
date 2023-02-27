@@ -1,15 +1,16 @@
-function[FilesOut] = Query(Files,varargin)
+function[FilesOut, ListStruct] = Query(ListStruct,varargin)
 %% function[Files] = Query(Files,varargin)
 % 
 % Function for searching file structures output by FindFiles.m. 
 %
-% Input:    Files = Filestruct output by FindFiles.m
-%           varargin = Arbitrary length set of query pairs -- the "key" to
-%           be queried, followed by the desired "value".
+% Input:    ListStruct = Struct output by FindFiles.m
+%           varargin = Arbitrary-length set of query pairs --- the "key" to
+%           be queried, followed by the desired "value". Can also supply a
+%           ListStruct as value, and match entries (e.g. Participant I.D.).
 % Output:   FilesOut = cell array containing full paths to querried files
 %
 % Example usage:
-% MEGALocations = Query(FileStruct,'modality','mrs','seq','megapress');
+% MEGALocations = Query(FileStruct,'modality','mrs','seq','megapress','sub',PRESSLocations);
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2022
 
@@ -19,16 +20,28 @@ end
 
 Queries = reshape(varargin,2,length(varargin)/2)'; %Arrange queries
 
-for JJ=1:length(varargin)/2   
-    if ~isfield(Files, Queries{JJ,1}) % Check this is a field:
-        error('%s is not a field of File structure.',Queries{JJ,1})
-    end
+for JJ=1:length(varargin)/2
+    Key = Queries{JJ,1};
+    Value = Queries{JJ,2};
 
-    % Cell function finds entries not matching query criteria
-    Keep = contains({Files.(Queries{JJ,1})}, Queries{JJ,2});
-    Files = Files(Keep); % Keep only files that match the string search
+    if ~isfield(ListStruct, Key) % Check this is a field:
+        error('%s is not a field of File structure.',Key)
+    end
+    
+    Entries = {ListStruct.(Key)}; %Create cell array containing these entries
+    
+    if isstruct(Value) % If a struct provided as value, match Files using this key
+        if ~isfield(Value, Key) % Check this is a field:
+            error('%s is not a field of SECONDARY file structure.',Key)
+        end
+        [~,Keep] = intersect(Entries, {Value.(Key)}); % Find all files 
+    else
+        Entries(cellfun(@isnumeric, Entries)) = ''; % Replace empty entries with blank cell
+        Keep = contains(Entries, Value); % Find entries matching query
+    end
+    ListStruct = ListStruct(Keep); % Keep only files that match the string search
 end
 
-FilesOut = {Files.FullPath}; %Output as cell
+FilesOut = {ListStruct.FullPath}; %Output as cell
 
 end
