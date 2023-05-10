@@ -8,7 +8,7 @@ function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
 % into the struct. This allows filtering of files using this information
 % using the companion script: Query.m
 %
-% Additonally, warnigs are produced for potential BIDS convention
+% Additonally, warnings are produced for potential BIDS convention
 % inconsitencies within the data folder.
 % 
 % NOTE: Currently assumes no acqustion-level folders
@@ -19,11 +19,13 @@ function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
 %           FlaggedFiles = Cell array of potentially BIDS-conflicting paths
 %
 % Example usage:
-% Files = Query('Path/to/my/data',{'.nii*','.SDAT'});
+% Files = FindFiles('Path/to/my/data/folder',{'.nii*','.SDAT'});
 %       - This searches for nii, nii.gz, and sdat files
-%       - The 'data' folder has the sub-directory structure of BIDS
+%       - The 'data' folder should have the sub-directory structure of BIDS
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2022
+
+%% Handle defaults
 
 if ~exist('Exts','var')
     Exts = {'.nii*'}; % Search for .nii & .nii.gz
@@ -38,22 +40,22 @@ Folderlist = [];
 
 for JJ=1:length(Exts) % Run through extensions and iteratively add entries to lists
     DIR = dir(fullfile(TopDIR,'**',['*',Exts{JJ}])); % Recursive search for each extension
-    Folderlist = [Folderlist; {DIR.folder}']; % Cell array of folder names
-    Filelist = [Filelist;{DIR.name}']; % Cell array of file names
+    Folderlist = [Folderlist; {DIR.folder}']; % Add to cell array of folder names
+    Filelist = [Filelist;{DIR.name}']; % Add to cell array of file names
 end
 
+%% Extract BIDS info from file names
 L=length(Filelist);
 Files = repmat(struct(), L, 1 ); % pre-alocate files struct
 FlaggedFiles = cell(0);
 
-for JJ = 1:L %Loop over all files
+for JJ = 1:L % Loop over all files
     ProbFlag=0;
-    %% Extract info from file names
     Files(JJ).FullPath = [Folderlist{JJ},filesep,Filelist{JJ}]; % Generate full path
     [~,FileNoExt,Ext1]=fileparts(Filelist{JJ});[~,FileNoExt,Ext2]=fileparts(FileNoExt); % Run this twice to catch .nii.gz etc.
     Files(JJ).Ext = [Ext1,Ext2]; % Add both extensions to Files struct
     FileLevels = strsplit(FileNoExt,'_'); % Define file levels, sepparated using '_' as delim
-    for KK = 1:length(FileLevels) %loop over levels
+    for KK = 1:length(FileLevels) % loop over levels
         if KK==1 && ~contains(FileLevels{KK},'-') % If Prefix:
             Files(JJ).prefix = FileLevels{KK};
         elseif contains(FileLevels{KK},'-') % If key-value pair:
@@ -68,7 +70,8 @@ for JJ = 1:L %Loop over all files
     end
     
     %% Extract info from directory structure 
-    % Add modality info and check for file/folder name consistency at sub/ses level
+    % (Add modality info and check for file/folder name consistency at
+    % sub/ses level)
 
     FolderLevels = strsplit(erase(Folderlist{JJ},TopDIR),filesep); % Look at folder levels below specified TopDIR
     if isempty(FolderLevels{1}) % 1st entry may be empty depending on trailing filesep
@@ -117,6 +120,6 @@ for JJ = 1:L %Loop over all files
         FlaggedFiles = [FlaggedFiles,fullfile(Folderlist{JJ},Filelist{JJ})];
     end
 
-end
+end%File loop
 
-end
+end%Function

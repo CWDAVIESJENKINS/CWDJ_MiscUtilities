@@ -4,13 +4,13 @@ function[FilesOut, ListStruct] = Query(ListStruct,varargin)
 % Function for searching file structures output by FindFiles.m. 
 %
 % Input:    ListStruct = Struct output by FindFiles.m
-%           varargin = Arbitrary-length set of query pairs --- the "key" to
+%           varargin = Arbitrary-length set of query pairs i.e. the "key" to
 %           be queried, followed by the desired "value". Can also supply a
 %           ListStruct as value, and match entries (e.g. Participant I.D.).
 % Output:   FilesOut = cell array containing full paths to querried files
 %
 % Example usage:
-% MEGALocations = Query(FileStruct,'modality','mrs','seq','megapress','sub',PRESSLocations);
+% MEGALocations = Query(AllFileStruct,'modality','mrs','seq','megapress','sub',PRESSFileStruct);
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2022
 
@@ -18,7 +18,7 @@ if ~(mod(length(varargin),2)==0) % If odd number of arguments supplied:
     error('Must have an even number of varargin. See example usage.')
 end
 
-Queries = reshape(varargin,2,length(varargin)/2)'; %Arrange queries
+Queries = reshape(varargin,2,length(varargin)/2)'; % Arrange into pairs
 
 for JJ=1:length(varargin)/2
     Key = Queries{JJ,1};
