@@ -1,14 +1,23 @@
-function[ProjFolder] = CC_Pather()
-%% function[ProjFolder] = CC_Pather()
+function[ProjFolder] = CC_Pather(varargin)
+%% function[ProjFolder] = CC_Pather(varargin)
 %
 % Description: A function to delineate relative paths from standardized
-% project folder definitions. 
+% project folder definitions. This function assumes that the script or
+% function from which it is called is contained below a "code" directory
+% i.e. code/*anything*/CallingScript.m
 %
 % Output:    ProjFolder = Absolute path to project folder
-% Optional:  Arg1 = 
+% Optional:  varargin = Optional path arguments for constructing sub
+%               directory paths
 %
-% Example usage: [ProjectFolder] = CC_Pather
-%                ResultsPath = fullfile(CC_Pather,'results','MRSFitting');
+% Example usage: 
+% For a calling script located here: /Storage/Project1/code/Stuff/Script.m
+%
+% Folder = CC_Pather;
+%       Returns: /Storage/Project1/
+%
+% Folder2 = CC_Pather('results','experiment1');
+%       Returns: /Storage/Project1/results/experiment1
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2023
 
@@ -29,10 +38,14 @@ if contains(lower(CallingPath),'code')              % If "code" is in the path, 
         Ind = Ind-1;
         ProjFolder = strjoin(Split(1:Ind),filesep);
     elseif isempty(Ind)
-        error('Calling script/function is not in a "code" directory: %s', CallingPath)
+        error('Calling script or function is not in a "code" directory: %s', CallingPath)
     else
         error('Multiple references to "code" along full path: %s',CallingPath)
     end
+end
+
+if ~isempty(varargin)
+    ProjFolder = fullfile(ProjFolder,varargin{:});
 end
 
 end
