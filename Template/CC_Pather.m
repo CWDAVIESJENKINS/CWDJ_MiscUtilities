@@ -19,7 +19,7 @@ if contains(PathStack(end).name,'LiveEditor')       % If called from a script ex
 elseif length(PathStack)==1                         % Elseif only this function in path stack, CC_Pather was called from the command window
     error('Why would you call this from the command window?! CC_Pather must be run from a function (or script, using "run section"')
 else                                                % Else, assume we refer to the top calling function
-    CallingPath = PathStack(end).file;
+    CallingPath = PathStack(2).file;
 end
 
 if contains(lower(CallingPath),'code')              % If "code" is in the path, then try to identify the project directory
