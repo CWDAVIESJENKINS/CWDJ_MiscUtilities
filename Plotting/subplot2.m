@@ -1,7 +1,7 @@
 function[] = subplot2(Rows,Cols,PlotNum,Margin)
 %% function[] = subplot2(Rows,Cols,PlotNum,Margin)
 %
-% Description: Function which preserves some of the functionality of 
+% Description: A function which preserves some of the functionality of 
 % subplot but adds an addittional argument to specify plot margins.
 %
 % Input:     Rows = Number of rows in sub-plot grid
@@ -11,12 +11,12 @@ function[] = subplot2(Rows,Cols,PlotNum,Margin)
 %               (specifiying a common gap between plots and the figure's 
 %               edged) or a length-3 vector 
 %               (defined: [PlotGapX, PlotGapY, GapAtEdge];)
-% Output:    Pos = position argument used to define axis
 %
 % Example usage: 
-%            subplot2(3, 3, 4, 0.03, 0)
-%   sets a 3x3 grid of plots, creating an axis in the 4th position with the
-%   inner margins decreased and outer margin removed.
+%            subplot2(3, 3, 4, [0.03, 0.03, 0])
+%   sets a 3x3 grid of plots, creating an axis in the 4th position, i.e.
+%   in the 2nd row, 1st collumn, with the inner margins decreased to 0.03,
+%   and outer margin removed.
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2023
 
