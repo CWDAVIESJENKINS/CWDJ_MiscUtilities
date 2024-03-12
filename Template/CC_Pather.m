@@ -25,8 +25,11 @@ PathStack = dbstack('-completenames'); % Find out where this function was called
 
 if contains(PathStack(end).name,'LiveEditor')       % If called from a script execution, get active filename
     CallingPath = matlab.desktop.editor.getActiveFilename;
+    if strcmp(CallingPath(1:8),'untitled')
+         error('Called from unsaved file: "%s". CC_Pather must be run from a function (or script, using "run section")',CallingPath)
+    end
 elseif length(PathStack)==1                         % Elseif only this function in path stack, CC_Pather was called from the command window
-    error('Why would you call this from the command window?! CC_Pather must be run from a function (or script, using "run section"')
+    error('Why would you call this from the command window?! CC_Pather must be run from a function (or script, using "run section")')
 else                                                % Else, assume we refer to the top calling function
     CallingPath = PathStack(2).file;
 end
