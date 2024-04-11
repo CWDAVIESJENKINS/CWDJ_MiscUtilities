@@ -36,7 +36,7 @@ end
 
 % Create/check color matrix
 if ~exist('Colors','var') || isempty(Colors)
-    Colors = cbrewer('qual','Dark2',length(InMat)); % Use cbrewer function to generate RGB vectors using the "Dark2" set
+    Colors = cbrewer('qual','Dark2',length(InMat),'linear'); % Use cbrewer function to generate RGB vectors using the "Dark2" set
 else
     ColSize = size(Colors);
     if ColSize(1)<length(InMat)
