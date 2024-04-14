@@ -8,7 +8,8 @@ function[ProjFolder] = CC_Pather(varargin)
 %
 % Output:    ProjFolder = Absolute path to project folder
 % Optional:  varargin = Optional path arguments for constructing sub
-%               directory paths
+%               directory paths. If varargin{1} = '*', code subdirectory
+%               structure is copied.
 %
 % Example usage: 
 % For a calling script located here: /Storage/Project1/code/Stuff/Script.m
@@ -18,6 +19,9 @@ function[ProjFolder] = CC_Pather(varargin)
 %
 % Folder2 = CC_Pather('results','experiment1');
 %       Returns: /Storage/Project1/results/experiment1
+%
+% Folder3 = CC_CC_Pather('*','experiment1');
+%       Returns: /Storage/Project1/results/Stuff/experiment1
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2023
 
@@ -45,10 +49,17 @@ if contains(lower(CallingPath),'code')              % If "code" is in the path, 
     else
         error('Multiple references to "code" along full path: %s',CallingPath)
     end
+else
+    error('No "code" directory on calling path:\n%s',CallingPath)
 end
 
 if ~isempty(varargin)
-    ProjFolder = fullfile(ProjFolder,varargin{:});
+    if matches(varargin{1},'*') % If 1st input == *, mirror subdirectories under "code"
+        varargin{1} = fileparts(CallingPath);
+        varargin{1} = strrep(varargin{1},[filesep,'code',filesep],[filesep,'results',filesep]);
+    end
+
+    ProjFolder = fullfile(ProjFolder,varargin{:}); % Add input args to directory string output
 end
 
 end
