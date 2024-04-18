@@ -1,4 +1,4 @@
-function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
+function[Files, FlaggedFiles] = FindFiles(TopDIR, Exts, dcm_dir_flag)
 %% function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
 % 
 % Function that recursively searches TopDIR for files with extensions
@@ -15,6 +15,8 @@ function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
 %
 % Input:    TopDIR = Top-level dirctory to begin search
 %           Exts = Cell array of extensions (default={'.nii*'} nii & nii.gz)
+%           dcm_dir_flag = 1 if parsing a directory of dicoms, rather than
+%                          a single file.
 % Output:   Files = Structure containing file paths and information
 %           FlaggedFiles = Cell array of potentially BIDS-conflicting paths
 %
@@ -32,6 +34,9 @@ if ~exist('Exts','var')
 elseif ~iscell(Exts)
     Exts = {Exts}; % If single ext, place in cell
 end
+if ~exist('dcm_dir_flag','var')
+    dcm_dir_flag = 0;
+end
 
 %% Find files matching extensions
 % Initialize lists
@@ -39,9 +44,18 @@ Filelist = [];
 Folderlist = [];
 
 for JJ=1:length(Exts) % Run through extensions and iteratively add entries to lists
-    DIR = dir(fullfile(TopDIR,'**',['*',Exts{JJ}])); % Recursive search for each extension
-    Folderlist = [Folderlist; {DIR.folder}']; % Add to cell array of folder names
-    Filelist = [Filelist;{DIR.name}']; % Add to cell array of file names
+    if dcm_dir_flag
+        DIR = dir(fullfile(TopDIR,'**',['*',Exts{JJ}])); % Recursive search for each extension
+        DIR = unique({DIR.folder})'; % Remove duplicate folders (many files per folder)
+        [Fld,Fls] = fileparts(DIR); % Take bottom-level directory as the "filename" for the remainder of the function for extraction of the BIDs info
+        Folderlist = [Folderlist;Fld]; % Add to cell array of folder names
+        Filelist = [Filelist;Fls]; % Add to cell array of file names
+    else
+        DIR = dir(fullfile(TopDIR,'**',['*',Exts{JJ}])); % Recursive search for each extension
+        Folderlist = [Folderlist; {DIR.folder}']; % Add to cell array of folder names
+        Filelist = [Filelist;{DIR.name}']; % Add to cell array of file names
+    end
+    
 end
 
 %% Extract BIDS info from file names
