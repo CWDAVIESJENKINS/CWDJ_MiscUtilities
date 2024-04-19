@@ -38,7 +38,7 @@ for JJ=1:length(varargin)/2
         end
         [~,Keep] = intersect(Entries, {Value.(Key)}); % Find all files 
     else
-        Entries(cellfun(@isnumeric, Entries)) = ''; % Replace empty entries with blank cell
+        Entries(cellfun(@isnumeric, Entries)) = {''}; % Replace empty entries with blank cell
         if ischar(Value) && strcmp(Value(1),'~') % If the search string is preceeded by "~" search for enties that don't have "Value"
             Value = Value(2:end); % Remove "~"
             Keep = ~contains(Entries, Value); % Find entries NOT matching query
