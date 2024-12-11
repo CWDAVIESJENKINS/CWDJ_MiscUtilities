@@ -23,7 +23,7 @@ if ~exist('SavLoc','var')
     SavLoc = fullfile(pwd,'CWDJ_Fig');
 end
 if ~exist("OtherFormats","var")
-    OtherFormats = {'png','pdf'};
+    OtherFormats = {'pdf'};
 end
 
 %% Create directory if it doesn't exist:
