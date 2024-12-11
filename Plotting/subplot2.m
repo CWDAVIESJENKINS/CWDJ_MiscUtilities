@@ -68,7 +68,7 @@ else
     PlotPos = [min(Pos),LXext,LYext];
 end
 
-ExistingAxis = findobj('Type', 'axes', 'Position', PlotPos); % Check if there is an existing axis in this location
+ExistingAxis = findobj(gcf, 'Type', 'axes', 'Position', PlotPos); % Check if there is an existing axis in this location
 if isempty(ExistingAxis) % If there isn't, create it
     axes('Position',PlotPos);
 else % Otherwise, select it
