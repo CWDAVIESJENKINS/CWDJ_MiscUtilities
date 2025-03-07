@@ -14,10 +14,14 @@ function[BC] = JitteredBoxPlot(InMat, Colors, varargin)
 % Additional varargin:
 %   Connection = Nx2 vector. Plots links between points specified in the 
 %                1st & 2nd colums of each row. Default: []
-%   Width = Width of the scatter distribution. Default: 0.2;
+%   ConnectionAlpha = Transparency of the connecting lines. Default = false
+%   Width = Width of the scatter distribution. Default: 0.2
 %   Offset = How shifted the scatter is, relative to box. Default: 0.4
+%   PointAlpha = Transparency of data points. Default: 0.5
+%   PointSize = Size of data points. Default: 25
 %   PlotOutliers = Whether to vizualize outliers inline with boxplot.
 %                  Default: false.
+%   PointShape = shape of scatter points. Default: {'o','o','o',...}
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2023
 
@@ -47,13 +51,14 @@ end
 %% Manage Varargin
 
 %%%%% Inititalize default parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Connection = [];
-ConnectionAlpha = 0.4;
-Width = 0.2; % Width of the scatter
-Offset = 0.35; % How shifted the scatter is (set to 0 to plot over)
-PlotOutliers = false;
-PointAlpha = 0.5;
-PointSize = 25;
+Connection = [];                        % Array defining group connections
+ConnectionAlpha = 0.4;                  % Alpha of the connecting lines
+Width = 0.2;                            % Width of the scatter
+Offset = 0.35;                          % How shifted the scatter is (set to 0 to plot over)
+PlotOutliers = false;                   % Bool—whether to to plot outliers in boxchart
+PointAlpha = 0.5;                       % Alpha of the scatter points
+PointSize = 25;                         % Size of the scatter points
+PointShape = repmat({'o'},S(1),1);     % Shape of scatter point (cell array)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Overwrite default parameters, if specified in varargin
@@ -76,8 +81,10 @@ if nargin>2
                 PointAlpha = Args{JJ,2};
             case "PointSize"
                 PointSize = Args{JJ,2};
+            case "PointShape"
+                PointShape = Args{JJ,2};
             otherwise
-                warning('Unknown option: %s',Args{JJ,2})
+                warning('Unknown option: %s',Args{JJ,1})
         end
     end
 end
@@ -90,7 +97,8 @@ for JJ=1:length(InMat)
         BC(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'BoxFaceColor',Colors(JJ,:),'BoxWidth',Width,'MarkerStyle','none');
     end
     hold on
-    %rng(abs(floor(sum(InMat{JJ}))));
+    
+    rng(abs(floor(sum(InMat{JJ})))); % Enable rng seed for reproducible randomization
 
     Jitter{JJ} = rand([1,length(InMat{JJ})]).*Width - Width/2 + JJ-Offset;
 
@@ -98,6 +106,7 @@ for JJ=1:length(InMat)
                                   'MarkerFaceColor',Colors(JJ,:),...
                                   'MarkerEdgeAlpha',PointAlpha,...
                                   'MarkerFaceAlpha',PointAlpha,...
+                                  'Marker',PointShape{JJ},...
                                   'SizeData',PointSize);
 end
 
