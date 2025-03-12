@@ -28,14 +28,16 @@ function[BC] = JitteredBoxPlot(InMat, Colors, varargin)
 %% Check inputs
 
 % Convert to cell array (if matrix or table)
-if ~iscell(InMat) && ~istable(InMat)
+if istable(InMat)
+    keyboard
+elseif iscell(InMat)
+    S = length(InMat);
+else
     S = size(InMat);
     M=InMat;InMat = cell(1,S(2));
     for JJ=1:S(2)
         InMat{JJ} = M(:,JJ);
     end
-elseif istable(InMat)
-    keyboard
 end
 
 % Create/check color matrix
