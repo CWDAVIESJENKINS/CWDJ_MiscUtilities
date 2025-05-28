@@ -1,13 +1,16 @@
-function[BC] = JitteredBoxPlot(InMat, Colors, varargin)
+function[BC, Output] = JitteredBoxPlot(InMat, Colors, varargin)
 %% function[BC] = JitteredBoxPlot(InMat, Colors)
 %
 % Description: Plot boxplots alongside scattered individual points.
 %
-% Input:     InMat = Matrix with columns representing seperate measures
+% Input:     InMat = Matrix with columns representing seperate measures or
+%               a cell array of vectors
 % Optional:  Colors = RGB color vectors, with rows corresponding to the
-%                     columns of InMat (default uses cbrewer)
+%               columns of InMat (default uses cbrewer)
 %            varargin = Additional (pairwise options)
 % Output:    BC = Boxchar array
+%            Output = A struct containing the median, quartiles, outliers,
+%               and whisker locations for each input dataset.
 %
 % Example usage: JitterBoxPlot(DataMatrix, ColorMatrix);
 %
@@ -29,7 +32,7 @@ function[BC] = JitteredBoxPlot(InMat, Colors, varargin)
 
 % Convert to cell array (if matrix or table)
 if istable(InMat)
-    keyboard
+    keyboard     % <- TODO
 elseif iscell(InMat)
     S = length(InMat);
 else
@@ -60,7 +63,7 @@ Offset = 0.35;                          % How shifted the scatter is (set to 0 t
 PlotOutliers = false;                   % Bool—whether to to plot outliers in boxchart
 PointAlpha = 0.5;                       % Alpha of the scatter points
 PointSize = 25;                         % Size of the scatter points
-PointShape = repmat({'o'},S(1),1);     % Shape of scatter point (cell array)
+PointShape = repmat({'o'},S(1),1);      % Shape of scatter point (cell array)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Overwrite default parameters, if specified in varargin
@@ -91,27 +94,35 @@ if nargin>2
     end
 end
 
-%% Loop and plot
+%% Loop to plot box charts and scatter
+
 for JJ=1:length(InMat)
+    % Populate secondary output struct with relevant descriptive statistics
+    Output(JJ).Median = median(InMat{JJ});
+    Output(JJ).Quartile = [prctile(InMat{JJ},25), prctile(InMat{JJ},25)];
+    Output(JJ).IsOutlier = isoutlier(InMat{JJ},'quartiles');
+    Output(JJ).Whisker = [min(InMat{JJ}(~Output(JJ).IsOutlier)), max(InMat{JJ}(~Output(JJ).IsOutlier))];
+
     if PlotOutliers
-        BC(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'MarkerColor',Colors(JJ,:),'BoxWidth',Width);
+        bc(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'MarkerColor',Colors(JJ,:),'BoxWidth',Width);
     else
-        BC(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'BoxFaceColor',Colors(JJ,:),'BoxWidth',Width,'MarkerStyle','none');
+        bc(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'BoxFaceColor',Colors(JJ,:),'BoxWidth',Width,'MarkerStyle','none');
     end
     hold on
     
-    rng(abs(floor(sum(InMat{JJ})))); % Enable rng seed for reproducible randomization
+    if PointSize>0
+        rng(abs(floor(sum(InMat{JJ})))); % Enable rng seed for reproducible randomization
 
-    Jitter{JJ} = rand([1,length(InMat{JJ})]).*Width - Width/2 + JJ-Offset;
+        Jitter{JJ} = rand([1,length(InMat{JJ})]).*Width - Width/2 + JJ-Offset;
 
-    scatter(Jitter{JJ}, InMat{JJ},'MarkerEdgeColor',Colors(JJ,:),...
-                                  'MarkerFaceColor',Colors(JJ,:),...
-                                  'MarkerEdgeAlpha',PointAlpha,...
-                                  'MarkerFaceAlpha',PointAlpha,...
-                                  'Marker',PointShape{JJ},...
-                                  'SizeData',PointSize);
+        scatter(Jitter{JJ}, InMat{JJ},'MarkerEdgeColor',Colors(JJ,:),...
+                                      'MarkerFaceColor',Colors(JJ,:),...
+                                      'MarkerEdgeAlpha',PointAlpha,...
+                                      'MarkerFaceAlpha',PointAlpha,...
+                                      'Marker',PointShape{JJ},...
+                                      'SizeData',PointSize);
+    end
 end
-
 Ax = gca;
 Ax.XAxis.Visible = 'off'; % remove x-axis
 
@@ -129,4 +140,11 @@ if ~isempty(Connection)
             plot([Jitter{Connection(JJ,1)}(KK), Jitter{Connection(JJ,2)}(KK)],[InMat{Connection(JJ,1)}(KK), InMat{Connection(JJ,2)}(KK)],'Color',[0,0,0,ConnectionAlpha],'LineWidth',0.2)
         end
     end
+end
+
+% Return figure handle only if outputs are requested
+if nargout > 0
+    BC = bc;
+end
+
 end
