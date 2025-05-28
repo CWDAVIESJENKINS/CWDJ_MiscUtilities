@@ -1,0 +1,5 @@
+{
+  "default_dest": "RecpientEmail@email.com",
+  "src_email": "SenderEmail@email.com",
+  "src_pwd": "SendersPasswordAfterSetingUpAccount"
+}
