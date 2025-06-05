@@ -1,5 +1,5 @@
-function[Files, FlaggedFiles] = FindFiles(TopDIR, Exts, dcm_dir_flag)
-%% function[Files, FlaggedFiles] = FindFiles(TopDIR,Exts)
+function[Files, FlaggedFiles] = FindFiles(TopDIR, Exts, dcm_dir_flag, HiddenFileflag) 
+%% function[Files, FlaggedFiles] = FindFiles(TopDIR, Exts, dcm_dir_flag, HiddenFileflag) 
 % 
 % Function that recursively searches TopDIR for files with extensions
 % matching Exts{}. Then, exploiting the folder/file naming conventions of
@@ -17,6 +17,8 @@ function[Files, FlaggedFiles] = FindFiles(TopDIR, Exts, dcm_dir_flag)
 %           Exts = Cell array of extensions (default={'.nii*'} nii & nii.gz)
 %           dcm_dir_flag = 1 if parsing a directory of dicoms, rather than
 %                          a single file.
+%           HiddenFileflag = 1 if to remove files prefixed with "."
+%                           Default = 0;
 % Output:   Files = Structure containing file paths and information
 %           FlaggedFiles = Cell array of potentially BIDS-conflicting paths
 %
@@ -37,6 +39,9 @@ end
 if ~exist('dcm_dir_flag','var')
     dcm_dir_flag = 0;
 end
+if ~exist('HiddenFileflag','var')
+    HiddenFileflag = false;
+end
 
 %% Find files matching extensions
 % Initialize lists
@@ -55,7 +60,19 @@ for JJ=1:length(Exts) % Run through extensions and iteratively add entries to li
         Folderlist = [Folderlist; {DIR.folder}']; % Add to cell array of folder names
         Filelist = [Filelist;{DIR.name}']; % Add to cell array of file names
     end
-    
+end
+
+% If HiddenFileflag is enabled, then remove files prefixed with "."
+if HiddenFileflag
+    for JJ=1:length(Filelist)
+        if matches(Filelist{JJ}(1),'.')
+            RemHid(JJ) = true;
+        else
+            RemHid(JJ) = false;
+        end
+    end
+    Filelist(RemHid) = [];
+    Folderlist(RemHid) = [];
 end
 
 %% Extract BIDS info from file names
