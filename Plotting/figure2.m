@@ -8,7 +8,7 @@ function[] = figure2(Fig,AspectRatio,Width)
 %   Type   | Width (inch) |  Description
 % 'single' |     3.42     |  Single column
 %  '1.5'   |     5.12     |  1.5 columns
-% 'double' |     6.9      |  Souble column
+% 'double' |     6.9      |  Double column
 % 'depth'  |     9.5      |  Page depth
 %
 % It also sets the default font and font size
@@ -16,7 +16,8 @@ function[] = figure2(Fig,AspectRatio,Width)
 % Input:     Fig = Figure handle
 %            AspectRatio = length as a factor of width (i.e. 1 for square)
 % Optional:  Width = The figure panel width (either a string from the above
-%                   table, or numeric value in inches). Default = 'double'
+%                   table, or numeric value in inches). Default = 'double',
+%                   i.e. double-column figure
 %
 % Example usage:
 %
@@ -25,7 +26,7 @@ function[] = figure2(Fig,AspectRatio,Width)
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2024
 arguments
-Fig (1,1) double {mustBeInteger} = []
+Fig (1,1) double {mustBeInteger} = gcf
 AspectRatio (1,1) double = 1
 Width = 'double'
 end
