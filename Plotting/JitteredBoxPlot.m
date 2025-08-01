@@ -63,7 +63,8 @@ Offset = 0.35;                          % How shifted the scatter is (set to 0 t
 PlotOutliers = false;                   % Bool—whether to to plot outliers in boxchart
 PointAlpha = 0.5;                       % Alpha of the scatter points
 PointSize = 25;                         % Size of the scatter points
-PointShape = repmat({'o'},S(1),1);      % Shape of scatter point (cell array)
+PointShape = repmat({'o'},S(2),1);      % Shape of scatter point (cell array)
+Xlabels = [];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Overwrite default parameters, if specified in varargin
@@ -88,6 +89,8 @@ if nargin>2
                 PointSize = Args{JJ,2};
             case "PointShape"
                 PointShape = Args{JJ,2};
+            case "Xlabels"
+                Xlabels = Args{JJ,2};
             otherwise
                 warning('Unknown option: %s',Args{JJ,1})
         end
@@ -111,7 +114,7 @@ for JJ=1:length(InMat)
     hold on
     
     if PointSize>0
-        rng(abs(floor(sum(InMat{JJ})))); % Enable rng seed for reproducible randomization
+        rng(abs(floor(sum(InMat{JJ},'omitnan')))); % Enable rng seed for reproducible randomization
 
         Jitter{JJ} = rand([1,length(InMat{JJ})]).*Width - Width/2 + JJ-Offset;
 
@@ -125,6 +128,15 @@ for JJ=1:length(InMat)
 end
 Ax = gca;
 Ax.XAxis.Visible = 'off'; % remove x-axis
+
+
+%% Add optional xlabels
+
+if ~isempty(Xlabels)
+    for JJ=1:length(InMat)
+        text(JJ,0,[Xlabels{JJ},'  '],'rotation',65,'horizontalalignment','right','fontsize',12,'color',Colors(JJ,:));
+    end
+end
 
 %% Plot connected points
 
