@@ -1,4 +1,4 @@
-function[] = figure2(Fig,AspectRatio,Width)
+function[Fig] = figure2(Fig,AspectRatio,Width)
 %% function[] = figure2(Fig,AspectRatio,Width)
 %
 % Description: Creates a figure panel with a fixed aspect
@@ -59,8 +59,7 @@ Height = AspectRatio * WidthVal;
 FIG = figure(Fig);
 
 set(FIG,'Units','Inches');      % Fix figure units to inches
-pos = get(FIG,'Position');      % Get current position of figure
-pos([3,4]) = [WidthVal,Height]; % Ammend the height and width
+pos = [0,0,WidthVal,Height]; % Ammend the height and width
 set(FIG,'Position',pos);        %
 
 % Set the default font and font size. 
