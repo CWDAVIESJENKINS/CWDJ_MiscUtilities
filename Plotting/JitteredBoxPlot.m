@@ -25,6 +25,11 @@ function[BC, Output] = JitteredBoxPlot(InMat, Colors, varargin)
 %   PlotOutliers = Whether to vizualize outliers inline with boxplot.
 %                  Default: false.
 %   PointShape = shape of scatter points. Default: {'o','o','o',...}
+%   Xlabels    = Cell of x-axis labels. Default: []
+%   Signif     = Nx3 vector. Adds annotations of signifcance between 
+%                boxplot N(1) and N(2), with p-val N(3).
+%   SignifAlph = Vector of increasing alpha levels. SignifAlph(N) adds N
+%                stars.
 %
 % C.W. Davies-Jenkins, Johns Hopkins University 2023
 
@@ -64,7 +69,9 @@ PlotOutliers = false;                   % Bool—whether to to plot outliers in 
 PointAlpha = 0.5;                       % Alpha of the scatter points
 PointSize = 25;                         % Size of the scatter points
 PointShape = repmat({'o'},S(2),1);      % Shape of scatter point (cell array)
-Xlabels = [];
+Xlabels = [];                           % Cell of xlabels
+Signif = [];                            % Array defining significance annotations
+SignifAlph = [0.05, 0.005, 0.0005];     % Array defining the single-test alpha
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Overwrite default parameters, if specified in varargin
@@ -91,6 +98,10 @@ if nargin>2
                 PointShape = Args{JJ,2};
             case "Xlabels"
                 Xlabels = Args{JJ,2};
+            case "Signif"
+                Signif = Args{JJ,2};
+            case "SignifAlph"
+                SignifAlph = Args{JJ,2};
             otherwise
                 warning('Unknown option: %s',Args{JJ,1})
         end
@@ -98,7 +109,6 @@ if nargin>2
 end
 
 %% Loop to plot box charts and scatter
-
 for JJ=1:length(InMat)
     % Populate secondary output struct with relevant descriptive statistics
     Output(JJ).Median = median(InMat{JJ});
@@ -112,7 +122,7 @@ for JJ=1:length(InMat)
         bc(JJ) = boxchart(JJ*ones(1,length(InMat{JJ})),InMat{JJ},'BoxFaceColor',Colors(JJ,:),'BoxFaceColor',Colors(JJ,:),'BoxWidth',Width,'MarkerStyle','none');
     end
     hold on
-    
+
     if PointSize>0
         rng(abs(floor(sum(InMat{JJ},'omitnan')))); % Enable rng seed for reproducible randomization
 
@@ -154,7 +164,42 @@ if ~isempty(Connection)
     end
 end
 
-% Return figure handle only if outputs are requested
+%% Add significance annotations
+
+if ~isempty(Signif)
+    DynRange = max([Output.Whisker]) - min([Output.Whisker]);
+
+    SLocs = Signif(:,1:2);
+    Pval = Signif(:,3);
+    
+    if any(Pval>1) || any(Pval<0)
+        error('Invalid p-value!')
+    end
+
+    for JJ=1:length(Pval)
+        NStar = find(Pval(JJ)<SignifAlph,1,'last');
+        Lab='';
+        for KK=1:NStar
+            Lab = [Lab,'*'];
+        end
+        
+        if ~isempty(Lab)
+            Yloc = max([Output(SLocs(JJ,1):SLocs(JJ,2)).Whisker]) + DynRange/100;
+            Distance = abs(SLocs(JJ,1)-SLocs(JJ,2));
+            if Distance>1
+                Yloc = Yloc+Distance*DynRange/20;
+            end
+
+            plot([SLocs(JJ,1),SLocs(JJ,2)], [Yloc, Yloc],'k-');
+            plot([SLocs(JJ,1),SLocs(JJ,1)], [Yloc-DynRange/100, Yloc+DynRange/100],'k-');
+            plot([SLocs(JJ,2),SLocs(JJ,2)], [Yloc-DynRange/100, Yloc+DynRange/100],'k-');
+            text(mean(SLocs(JJ,:)),Yloc,Lab,'FontSize',20,'HorizontalAlignment','center','VerticalAlignment','bottom'); 
+        end
+    end
+end
+
+
+%% Return figure handle only if outputs are requested
 if nargout > 0
     BC = bc;
 end
