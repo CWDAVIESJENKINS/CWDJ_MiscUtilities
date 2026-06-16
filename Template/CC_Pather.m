@@ -40,7 +40,7 @@ end
 
 if contains(lower(CallingPath),'code')              % If "code" is in the path, then try to identify the project directory
     Split = strsplit(CallingPath,filesep);
-    Ind = find(contains(lower(Split), 'code'));
+    Ind = find(matches(lower(Split), 'code'));
     if length(Ind)==1
         Ind = Ind-1;
         ProjFolder = strjoin(Split(1:Ind),filesep);
