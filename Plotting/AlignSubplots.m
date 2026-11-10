@@ -1,4 +1,4 @@
-function[] = AlignSubplots(FigHandles, Ax, BuffFact)
+function[] = AlignSubplots(FigHandles, Ax, AlignAcrossFig, BuffFact)
 %% function[] = AlignSubplots(FigHandles, Ax, BuffFact)
 %
 % Description: Aligns the x and/or y axis limits for different subplots
@@ -17,6 +17,9 @@ end
 if ~exist("Ax","var")
     Ax = 'xy';
 end
+if ~exist("AlignAcrossFig","var")
+    AlignAcrossFig = 0;
+end
 if ~exist("BuffFact","var")
     BuffFact = 0;
 end
@@ -26,8 +29,7 @@ end
 axHandles = findobj(figure(FigHandles(1)), 'Type', 'axes');
 NChild = length(axHandles);
 
-%% Extract the maxima and minima in x and y per figure and subplot
-
+%% Extract the upper and lower x and y limits across all subplots
 for JJ_Child = 1:NChild
     Xu = [];
     Xl = [];
@@ -52,8 +54,32 @@ for JJ_Child = 1:NChild
     Yuo(JJ_Child) = Yu;
 end
 
-%% Apply them to corresponding subfigures
+%% If enabled, align the axes limits within each figure too!
+if AlignAcrossFig
+        % Grab axis positions for all subplots
+        Locs = reshape([axHandles(:).Position],4,[])';Locs = Locs(:,1:2);
 
+        switch Ax
+            case 'x' % x-aligned sub-plots share x axes 
+                xLocs = unique(Locs(:,1));
+                for JJ=1:length(xLocs)
+                    Bool = xLocs(JJ)==Locs(:,1);
+                    Xlo(Bool) = min(Xlo(Bool));
+                    Xuo(Bool) = min(Xuo(Bool));
+                end
+            case 'y' % y-aligned sub-plots share y axes
+                yLocs = unique(Locs(:,2));
+                for JJ=1:length(yLocs)
+                    Bool = yLocs(JJ)==Locs(:,2);
+                    Ylo(Bool) = min(Ylo(Bool));
+                    Yuo(Bool) = min(Yuo(Bool));
+                end
+            case 'xy'
+                keyboard
+        end
+end       
+
+%% Apply them to corresponding subfigures
 for JJ_Child = 1:NChild
     for JJ_Fig=1:length(FigHandles)
         axHandles = findobj(figure(FigHandles(JJ_Fig)), 'Type', 'axes');
