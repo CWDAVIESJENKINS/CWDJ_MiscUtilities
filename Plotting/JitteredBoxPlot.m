@@ -39,7 +39,7 @@ function[BC, Output] = JitteredBoxPlot(InMat, Colors, varargin)
 if istable(InMat)
     keyboard     % <- TODO
 elseif iscell(InMat)
-    S = length(InMat);
+    S = [1,length(InMat)];
 else
     S = size(InMat);
     M=InMat;InMat = cell(1,S(2));
