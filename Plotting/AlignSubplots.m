@@ -40,8 +40,6 @@ for JJ_Child = 1:NChild
         targetSubplot = axHandles(JJ_Child);
         allLines = findobj(targetSubplot, 'Type', 'line');
         for JJ_Line = 1:length(allLines)
-
-
             Xl = min([Xl, allLines(JJ_Line).XData]);
             Xu = max([Xu, allLines(JJ_Line).XData]);
             Yl = min([Yl, allLines(JJ_Line).YData]);
@@ -54,7 +52,7 @@ for JJ_Child = 1:NChild
     Yuo(JJ_Child) = Yu;
 end
 
-%% If enabled, align the axes limits within each figure too!
+%% If enabled, align the axes limits within each figure, too!
 if AlignAcrossFig
         % Grab axis positions for all subplots
         Locs = reshape([axHandles(:).Position],4,[])';Locs = Locs(:,1:2);
@@ -72,7 +70,7 @@ if AlignAcrossFig
                 for JJ=1:length(yLocs)
                     Bool = yLocs(JJ)==Locs(:,2);
                     Ylo(Bool) = min(Ylo(Bool));
-                    Yuo(Bool) = min(Yuo(Bool));
+                    Yuo(Bool) = max(Yuo(Bool));
                 end
             case 'xy'
                 keyboard
