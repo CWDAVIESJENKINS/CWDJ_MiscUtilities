@@ -151,15 +151,40 @@ end
 %% Plot connected points
 
 if ~isempty(Connection)
-    Sc = size(Connection);
-    for JJ=1:Sc(1)
-        L1 = length(Jitter{Connection(JJ,1)});
-        L2 = length(Jitter{Connection(JJ,2)});
-        if ~(L1 == L2)
-            error("Can't plot this connection! Entry %i has different lengths: %i and %i",JJ,L1,L2);
+    for JJ=1:length(InMat)
+        Sc(JJ) = length(InMat{JJ});
+    end
+    assert(length(unique(Sc))==1);
+
+    Link = cell(1,length(InMat));
+    if isnumeric(Connection)
+        % If pre-defined column links, copy them to all data points
+        for JJ=1:length(InMat)
+            Link{JJ} = Connection;
         end
-        for KK=1:L1
-            plot([Jitter{Connection(JJ,1)}(KK), Jitter{Connection(JJ,2)}(KK)],[InMat{Connection(JJ,1)}(KK), InMat{Connection(JJ,2)}(KK)],'Color',[0,0,0,ConnectionAlpha],'LineWidth',0.2)
+    else
+        % Else swithc between modes
+        switch Connection
+            case 'seq'
+                % 'seq' link sequential columns accounting for mismatched
+                % sizes (e.g., due to infs or nans)
+                               
+                IsValid = ~isnan(cell2mat(InMat)) & ~isinf(cell2mat(InMat));
+                for JJ=1:size(IsValid,1)
+                    Points = find(IsValid(JJ,:));
+                    Link{JJ} = [];
+                    for KK=1:length(Points)-1
+                        Link{JJ} = [Link{JJ};Points(KK),Points(KK+1)];
+                    end
+                end
+        end
+    end
+
+    for JJ=1:length(Link)           % Data points
+        for KK=1:size(Link{JJ},1)   % BP links for datapoint 
+            Link_JJKK = Link{JJ}(KK,:);
+            plot([Jitter{Link{JJ}(KK,1)}(JJ), Jitter{Link{JJ}(KK,2)}(JJ)], [InMat{Link{JJ}(KK,1)}(JJ), InMat{Link{JJ}(KK,2)}(JJ)]...
+                ,'Color',[0,0,0,ConnectionAlpha],'LineWidth',0.2)
         end
     end
 end
